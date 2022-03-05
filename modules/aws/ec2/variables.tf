@@ -10,6 +10,18 @@ variable "type" {
   description   = "Instace types, combination of CPU, memory, storage and network capacity."
 }
 
+variable "ssh_key" {
+  type          = string
+  default       = "default-key"
+  description   = "Key to access the server via ssh protocol."
+}
+
+variable "security_groups" {
+  type          = list(string)
+  default       = ["default"]
+  description   = "Security groups to access server ports."
+}
+
 variable "root_size" {
   type          = string
   default       = "20"
@@ -20,10 +32,4 @@ variable "server_name" {
   type          = string
   default       = ""
   description   = "Server name."
-}
-
-variable "ssh_key" {
-  type          = string
-  default       = "default-key"
-  description   = "Key to access the server via ssh protocol."
 }
