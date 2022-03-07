@@ -1,3 +1,9 @@
+##
+# intranet {
+##
+
+# inbound {
+
 resource "aws_security_group" "allow_all_from_intranet" {
   name        = "allow_all_from_intranet"
   description = "Allow All from intranet"
@@ -43,6 +49,10 @@ resource "aws_security_group_rule" "allow_from_intranet" {
   security_group_id = aws_security_group.allow_from_intranet[index(local.inbound_intersection, each.value.name)].id
 }
 
+# inbound }
+
+# outbound {
+
 resource "aws_security_group" "allow_all_to_intranet" {
   name        = "allow_all_to_intranet"
   description = "Allow All to intranet"
@@ -87,3 +97,46 @@ resource "aws_security_group_rule" "allow_to_intranet" {
   cidr_blocks       = local.intranet_cidr_blocks
   security_group_id = aws_security_group.allow_to_intranet[index(local.outbound_intersection, each.value.name)].id
 }
+
+# outbound }
+
+##
+# intranet }
+##
+
+##
+# everywhere {
+##
+
+# inbound {
+
+resource "aws_security_group" "allow_from_everywhere" {
+  for_each = {
+    for name, def in local.groups : name => def
+    if lookup(def, "public", false) && contains(local.public_inbound_intersection, name)
+  }
+
+  name        = "allow_${lower(each.key)}_from_everywhere"
+  description = "Allow ${each.key} from everywhere"
+  vpc_id      = data.aws_vpc.main.id
+
+  tags = {
+    Name = "Inbound ${each.key} From Everywhere (${local.vpc_name})"
+  }
+}
+
+resource "aws_security_group_rule" "allow_from_everywhere" {
+  for_each = {
+    for name, def in local.group_ports : def.key => def
+    if lookup(def, "public", false) && contains(local.public_inbound_intersection, def.name)
+  }
+
+  type              = "ingress"
+  from_port         = each.value.port
+  to_port           = each.value.port
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.allow_from_everywhere[each.value.name].id
+}
+
+# inbound }

@@ -13,11 +13,23 @@ variable "vpc_name" {
 variable "inbound" {
   type          = list(string)
   default       = [ "" ]
-  description   = "Name the type of ingress traffic to accept."
+  description   = "Name the type of ingress traffic to accept from Intranet."
 }
 
 variable "outbound" {
   type          = list(string)
   default       = [ "" ]
-  description   = "Name the type of outgress traffic to accept."
+  description   = "Name the type of outgress traffic to accept from Intranet."
+}
+
+variable "public_inbound" {
+  type          = list(string)
+  default       = [ "" ]
+  description   = "Name the type of ingress traffic to accept from the Internet."
+}
+
+variable "public_outbound" {
+  type          = list(string)
+  default       = [ "" ]
+  description   = "Name the type of outgress traffic to accept from the Internet."
 }

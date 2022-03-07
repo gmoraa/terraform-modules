@@ -21,6 +21,8 @@ locals {
 locals {
     inbound_intersection = tolist(setintersection([for x,y in local.groups : x], var.inbound))
     outbound_intersection = tolist(setintersection([for x,y in local.groups : x], var.outbound))
+    public_inbound_intersection = tolist(setintersection([for x,y in local.groups : x], var.public_inbound))
+    public_outbound_intersection = tolist(setintersection([for x,y in local.groups : x], var.public_outbound))
 }
 
 locals {
