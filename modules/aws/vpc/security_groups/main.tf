@@ -18,20 +18,20 @@ resource "aws_security_group_rule" "allow_all_from_intranet" {
 }
 
 resource "aws_security_group" "allow_from_intranet" {
-  count       = length(local.intersection)
-  name        = "allow_${lower(local.intersection[count.index])}"
-  description = "Allow ${local.intersection[count.index]}"
+  count       = length(local.inbound_intersection)
+  name        = "allow_${lower(local.inbound_intersection[count.index])}_from_intranet"
+  description = "Allow ${local.inbound_intersection[count.index]} from intranet"
   vpc_id      = data.aws_vpc.main.id
 
   tags = {
-    Name = "Inbound ${local.intersection[count.index]}"
+    Name = "Inbound ${local.inbound_intersection[count.index]}"
   }
 }
 
 resource "aws_security_group_rule" "allow_from_intranet" {
   for_each = {
     for name, def in local.group_ports : def.key => def
-    if contains(local.intersection, def.name)
+    if contains(local.inbound_intersection, def.name)
   }
 
   description       = each.value.name
@@ -40,5 +40,50 @@ resource "aws_security_group_rule" "allow_from_intranet" {
   to_port           = each.value.port
   protocol          = "tcp"
   cidr_blocks       = local.intranet_cidr_blocks
-  security_group_id = aws_security_group.allow_from_intranet[index(local.intersection, each.value.name)].id
+  security_group_id = aws_security_group.allow_from_intranet[index(local.inbound_intersection, each.value.name)].id
+}
+
+resource "aws_security_group" "allow_all_to_intranet" {
+  name        = "allow_all_to_intranet"
+  description = "Allow All to intranet"
+  vpc_id      = data.aws_vpc.main.id
+
+  tags = {
+    Name = "All Inbound To Intranet (${local.vpc_name})"
+  }
+}
+
+resource "aws_security_group_rule" "allow_all_to_intranet" {
+  type              = "ingress"
+  from_port         = 0
+  to_port           = 0
+  protocol          = "all"
+  cidr_blocks       = local.intranet_cidr_blocks
+  security_group_id = aws_security_group.allow_all_to_intranet.id
+}
+
+resource "aws_security_group" "allow_to_intranet" {
+  count       = length(local.outbound_intersection)
+  name        = "allow_${lower(local.outbound_intersection[count.index])}_to_intranet"
+  description = "Allow ${local.outbound_intersection[count.index]} to intranet"
+  vpc_id      = data.aws_vpc.main.id
+
+  tags = {
+    Name = "Outbound ${local.outbound_intersection[count.index]} To Intranet (${local.vpc_name})"
+  }
+}
+
+resource "aws_security_group_rule" "allow_to_intranet" {
+  for_each = {
+    for name, def in local.group_ports : def.key => def
+    if contains(local.outbound_intersection, def.name)
+  }
+
+  description       = each.value.name
+  type              = "egress"
+  from_port         = each.value.port
+  to_port           = each.value.port
+  protocol          = "tcp"
+  cidr_blocks       = local.intranet_cidr_blocks
+  security_group_id = aws_security_group.allow_to_intranet[index(local.outbound_intersection, each.value.name)].id
 }

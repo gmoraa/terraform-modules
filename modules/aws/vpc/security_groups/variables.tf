@@ -15,3 +15,9 @@ variable "inbound" {
   default       = [ "" ]
   description   = "Name the type of ingress traffic to accept."
 }
+
+variable "outbound" {
+  type          = list(string)
+  default       = [ "" ]
+  description   = "Name the type of outgress traffic to accept."
+}

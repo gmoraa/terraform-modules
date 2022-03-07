@@ -19,7 +19,8 @@ locals {
 }
 
 locals {
-    intersection = tolist(setintersection([for x,y in local.groups : x], var.inbound))
+    inbound_intersection = tolist(setintersection([for x,y in local.groups : x], var.inbound))
+    outbound_intersection = tolist(setintersection([for x,y in local.groups : x], var.outbound))
 }
 
 locals {
