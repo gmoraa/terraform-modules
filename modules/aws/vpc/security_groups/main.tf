@@ -140,3 +140,60 @@ resource "aws_security_group_rule" "allow_from_everywhere" {
 }
 
 # inbound }
+
+# outbound {
+
+resource "aws_security_group" "allow_all_to_everywhere" {
+  name        = "allow_all_to_everywhere"
+  description = "Allow all to everywhere"
+  vpc_id      = data.aws_vpc.main.id
+
+  tags = {
+    Name = "Outbound All To Everywhere (${local.vpc_name})"
+  }
+}
+
+resource "aws_security_group_rule" "allow_all_to_everywhere" {
+  type              = "egress"
+  description       = "Allow all to everywhere"
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.allow_all_to_everywhere.id
+}
+
+resource "aws_security_group" "allow_to_everywhere" {
+  for_each = {
+    for name, def in local.groups : name => def
+    if lookup(def, "public", false) && contains(local.public_outbound_intersection, name)
+  }
+
+  name        = "allow_${lower(each.key)}_to_everywhere"
+  description = "Allow ${each.key} to everywhere"
+  vpc_id      = data.aws_vpc.main.id
+
+  tags = {
+    Name = "Outbound ${each.key} To Everywhere (${local.vpc_name})"
+  }
+}
+
+resource "aws_security_group_rule" "allow_to_everywhere" {
+  for_each = {
+    for name, def in local.group_ports : def.key => def
+    if lookup(def, "public", false) && contains(local.public_outbound_intersection, def.name)
+  }
+
+  type              = "egress"
+  from_port         = each.value.port
+  to_port           = each.value.port
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.allow_to_everywhere[each.value.name].id
+}
+
+# outbound }
+
+##
+# everywhere }
+##
