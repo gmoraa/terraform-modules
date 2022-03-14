@@ -6,20 +6,23 @@ on:
   pull_request:
 jobs:
   tfsec:
-    name: tfsec sarif report
+    name: tfsec
     runs-on: ubuntu-latest
 
     steps:
-      - name: Clone repo
-        uses: actions/checkout@master
+      - name: Run tfsec with sarif upload
+        uses: aquasecurity/tfsec-sarif-action@v0.0.6
 
-      - name: tfsec
-        uses: tfsec/tfsec-sarif-action@master
-        with:
-          sarif_file: tfsec.sarif         
+#      - name: Clone repo
+#        uses: actions/checkout@master
 
-      - name: Upload SARIF file
-        uses: github/codeql-action/upload-sarif@v1
-        with:
+#      - name: tfsec
+#        uses: tfsec/tfsec-sarif-action@master
+#        with:
+#          sarif_file: tfsec.sarif         
+
+#      - name: Upload SARIF file
+#        uses: github/codeql-action/upload-sarif@v1
+#        with:
           # Path to SARIF file relative to the root of the repository
-          sarif_file: tfsec.sarif    
+#          sarif_file: tfsec.sarif    
